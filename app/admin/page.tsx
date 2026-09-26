@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {redirect} from 'next/navigation';
-import {Users,Activity,Trophy,ShieldCheck,Bell,ScrollText} from 'lucide-react';
+import {Users,Activity,Trophy,ShieldCheck,Bell,ScrollText,HeartPulse} from 'lucide-react';
 import {SectionTitle} from '@/components/section-title';
 import {StatCard} from '@/components/stat-card';
 import {createClient} from '@/lib/supabase/server';
@@ -25,6 +25,7 @@ export default async function Admin(){
     ['/admin/gamification',Trophy,'Gamificação','Conquistas e desafios'],
     ['/admin/notifications',Bell,'Notificações','Avisos para usuários'],
     ['/admin/audit',ScrollText,'Auditoria','Histórico administrativo'],
+    ['/admin/system',HeartPulse,'Saúde do sistema','Provider, filas e resultados'],
   ] as const;
 
   return <div className="space-y-6">

@@ -64,23 +64,47 @@ export async function getMatch(id:string): Promise<Match | null> {
   return data ? mapMatch(data) : null;
 }
 
-export async function getLeaderboard(limit=100) {
-  const s = await createClient();
-  const { data, error } = await s
-    .from('leaderboard_entries')
-    .select('user_id,username,city,state,xp')
-    .order('xp',{ascending:false})
-    .limit(limit);
+export async function getCurrentChallenge(){
+  const s=await createClient();
+  const now=new Date().toISOString();
 
-  if (error) throw error;
+  const {data:challenge,error}=await s
+    .from('challenges')
+    .select('id,name,description,xp_reward,criteria,starts_at,ends_at')
+    .eq('active',true)
+    .lte('starts_at',now)
+    .gt('ends_at',now)
+    .order('xp_reward',{ascending:true})
+    .limit(1)
+    .maybeSingle();
 
-  return (data ?? []).map((r:any,i:number)=>({
-    position:i+1,
-    username:r.username ?? 'jogador',
-    city:r.city ?? '-',
-    state:r.state ?? '-',
-    xp:Number(r.xp ?? 0)
-  }));
+  if(error) throw error;
+  if(!challenge) return null;
+
+  const {data:{user}}=await s.auth.getUser();
+  let current=0;
+  let completed=false;
+
+  if(user){
+    const {data:entry}=await s
+      .from('challenge_entries')
+      .select('progress,completed_at')
+      .eq('challenge_id',challenge.id)
+      .eq('user_id',user.id)
+      .maybeSingle();
+
+    current=Number(entry?.progress?.predictions??0);
+    completed=Boolean(entry?.completed_at);
+  }
+
+  const needed=Number(challenge.criteria?.predictions??0);
+  return {
+    ...challenge,
+    current,
+    needed,
+    completed,
+    percent:needed?Math.min(100,Math.round(current/needed*100)):0
+  };
 }
 
 export async function getCurrentProfile() {

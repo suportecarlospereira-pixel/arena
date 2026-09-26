@@ -15,7 +15,7 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://jpdjwcxlxvlgqgbresae.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_6XJH0Tklv29MbqKjtI_G_w_WCvUrEPu
-      NEXT_PUBLIC_APP_URL: https://arena.vercel.app
+      NEXT_PUBLIC_APP_URL: https://arena-u7qy.vercel.app
       ENABLE_DEMO_MODE: "false"
     steps:
       - name: Checkout
@@ -29,6 +29,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+
+      - name: Dependency security audit
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Run tests
         run: npm test
