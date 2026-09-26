@@ -84,8 +84,8 @@ function ReviewCard({row,isSuperAdmin}:{row:ReviewRow;isSuperAdmin:boolean}){
     </div>
 
     {isSuperAdmin&&<div className="mt-4 grid gap-2 sm:grid-cols-[100px_100px_auto]">
-      <input value={home} onChange={e=>setHome(e.target.value.replace(/\\D/g,'').slice(0,2))} inputMode="numeric" className="rounded-xl border border-white/10 bg-black/30 px-3 py-2" aria-label="Placar mandante"/>
-      <input value={away} onChange={e=>setAway(e.target.value.replace(/\\D/g,'').slice(0,2))} inputMode="numeric" className="rounded-xl border border-white/10 bg-black/30 px-3 py-2" aria-label="Placar visitante"/>
+      <input value={home} onChange={e=>setHome(e.target.value.replace(/\D/g,'').slice(0,2))} inputMode="numeric" className="rounded-xl border border-white/10 bg-black/30 px-3 py-2" aria-label="Placar mandante"/>
+      <input value={away} onChange={e=>setAway(e.target.value.replace(/\D/g,'').slice(0,2))} inputMode="numeric" className="rounded-xl border border-white/10 bg-black/30 px-3 py-2" aria-label="Placar visitante"/>
       <button disabled={busy||home===''||away===''} onClick={resolve} className="arena-button disabled:opacity-50">
         {busy?'SALVANDO...':'CONFIRMAR E TRAVAR RESULTADO'}
       </button>
