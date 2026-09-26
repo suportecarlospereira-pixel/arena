@@ -1,2 +1,51 @@
-import {redirect} from 'next/navigation'; import {Users,Activity,Trophy,ShieldCheck,Bell,Database} from 'lucide-react'; import {SectionTitle} from '@/components/section-title'; import {StatCard} from '@/components/stat-card'; import {createClient} from '@/lib/supabase/server';
-export default async function Admin(){const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)redirect('/login');const {data:me}=await s.from('profiles').select('role').eq('id',user.id).single();if(!me||!['ADMIN','SUPER_ADMIN'].includes(me.role))redirect('/');const {data:stats,error:statsError}=await s.rpc('admin_dashboard_stats');if(statsError)throw statsError;const row=Array.isArray(stats)?stats[0]:stats;const users=row?.users??0,predictions=row?.predictions??0,matches=row?.matches??0,premium=row?.premium??0;return <div className="space-y-6"><SectionTitle eyebrow="Área restrita" title="Admin Dashboard"/><div className="grid grid-cols-2 gap-3 lg:grid-cols-4"><StatCard label="Usuários" value={users??0}/><StatCard label="Partidas" value={matches??0}/><StatCard label="Palpites" value={predictions??0}/><StatCard label="Premium" value={premium??0}/></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[[Users,'Usuários','Roles, bloqueios e perfis'],[Trophy,'Campeonatos','Competições, rodadas e times'],[Activity,'Partidas','Agenda, status e resultados'],[ShieldCheck,'Gamificação','XP, níveis e conquistas'],[Bell,'Notificações','Campanhas e eventos'],[Database,'Configurações','Providers e parâmetros']].map(([Icon,title,desc]:any)=><button key={title} className="arena-card flex items-center gap-4 p-5 text-left transition hover:border-emerald-500/30"><span className="rounded-2xl bg-white/[.05] p-3 text-emerald-400"><Icon/></span><span><b className="block">{title}</b><small className="text-slate-500">{desc}</small></span></button>)}</div></div>}
+import Link from 'next/link';
+import {redirect} from 'next/navigation';
+import {Users,Activity,Trophy,ShieldCheck,Bell,ScrollText} from 'lucide-react';
+import {SectionTitle} from '@/components/section-title';
+import {StatCard} from '@/components/stat-card';
+import {createClient} from '@/lib/supabase/server';
+
+export const dynamic='force-dynamic';
+
+export default async function Admin(){
+  const s=await createClient();
+  const {data:{user}}=await s.auth.getUser();
+  if(!user) redirect('/login');
+
+  const {data:me}=await s.from('profiles').select('role,username').eq('id',user.id).single();
+  if(!me||!['ADMIN','SUPER_ADMIN'].includes(me.role)) redirect('/');
+
+  const {data:stats,error:statsError}=await s.rpc('admin_dashboard_stats');
+  if(statsError) throw statsError;
+  const row=Array.isArray(stats)?stats[0]:stats;
+
+  const cards=[
+    ['/admin/users',Users,'Usuários','Roles, planos e perfis'],
+    ['/admin/matches',Activity,'Partidas','Agenda, status e resultados'],
+    ['/admin/gamification',Trophy,'Gamificação','Conquistas e desafios'],
+    ['/admin/notifications',Bell,'Notificações','Avisos para usuários'],
+    ['/admin/audit',ScrollText,'Auditoria','Histórico administrativo'],
+  ] as const;
+
+  return <div className="space-y-6">
+    <SectionTitle eyebrow={`${me.role} • @${me.username}`} title="Admin Dashboard"/>
+
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatCard label="Usuários" value={row?.users??0}/>
+      <StatCard label="Partidas" value={row?.matches??0}/>
+      <StatCard label="Palpites" value={row?.predictions??0}/>
+      <StatCard label="Premium" value={row?.premium??0}/>
+    </div>
+
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {cards.map(([href,Icon,title,desc])=><Link key={href} href={href} className="arena-card flex items-center gap-4 p-5 transition hover:border-emerald-500/30">
+        <span className="rounded-2xl bg-white/[.05] p-3 text-emerald-400"><Icon/></span>
+        <span><b className="block">{title}</b><small className="text-slate-500">{desc}</small></span>
+      </Link>)}
+      <div className="arena-card flex items-center gap-4 p-5">
+        <span className="rounded-2xl bg-white/[.05] p-3 text-sky-400"><ShieldCheck/></span>
+        <span><b className="block">Segurança ativa</b><small className="text-slate-500">RLS + RBAC + auditoria</small></span>
+      </div>
+    </div>
+  </div>
+}
