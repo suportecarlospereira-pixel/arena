@@ -1,0 +1,37 @@
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { createClient } from '@/lib/supabase/server';
+
+const Schema=z.object({
+  name:z.string().trim().min(2).max(80),
+  username:z.string().trim().min(3).max(30).regex(/^[a-zA-Z0-9_.-]+$/),
+  city:z.string().trim().min(2).max(80),
+  state:z.string().trim().length(2)
+});
+
+export async function PATCH(req:Request){
+  try{
+    const input=Schema.parse(await req.json());
+    const s=await createClient();
+    const {data:{user}}=await s.auth.getUser();
+    if(!user) return NextResponse.json({error:'Não autenticado.'},{status:401});
+
+    const {data,error}=await s.from('profiles')
+      .update({
+        name:input.name,
+        username:input.username.toLowerCase(),
+        city:input.city,
+        state:input.state.toUpperCase(),
+        updated_at:new Date().toISOString()
+      })
+      .eq('id',user.id)
+      .select('name,username,city,state')
+      .single();
+
+    if(error) throw error;
+    return NextResponse.json({ok:true,profile:data});
+  }catch(e){
+    if(e instanceof z.ZodError) return NextResponse.json({error:'Verifique os campos do perfil.'},{status:400});
+    return NextResponse.json({error:e instanceof Error?e.message:'Erro interno.'},{status:500});
+  }
+}
