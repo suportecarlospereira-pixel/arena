@@ -64,7 +64,8 @@ O painel `/admin/review` permite ao SUPER_ADMIN resolver uma divergência e trav
 - conquistas
 - títulos equipáveis
 - desafios diários e semanais
-- referrals com recompensa
+- referrals com +100 XP ao indicador e +50 XP ao convidado no primeiro palpite
+- marcos premium de indicação: 3 qualificadas → 3 dias PRO; 10 → 7 dias PRO+
 - rankings global, semanal, mensal, temporada, estado e cidade
 - ranking específico por competição
 
@@ -157,6 +158,13 @@ Os limites são aplicados no **backend/Supabase**, e não apenas escondidos no f
 - `/admin/billing` com MRR teórico, solicitações e diagnóstico Stripe
 - `/admin/growth` com funil de planos, checkout, trials, ativações e cancelamentos
 
+### Crescimento premium
+
+- `/indicacoes` com link viral, XP e marcos premium
+- para prêmio premium, o convidado precisa de 3 palpites em pelo menos 2 dias
+- cada marco é concedido apenas uma vez por conta
+- o prêmio usa grant temporário e não altera assinatura paga
+
 ### Cupons e trials
 
 - grants temporários separados do plano pago
@@ -221,6 +229,7 @@ A sequência atual inclui:
 - 018 — índices de monetização
 - 019 — grants premium e cupons/trials
 - 020 — funil de monetização autenticado
+- 021 — marcos premium de indicação qualificada
 
 A Edge Function de push está versionada em:
 
