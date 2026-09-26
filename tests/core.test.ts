@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest'; import {demoMatches,ranking,demoUser} from '../lib/demo-data';
+describe('ARENA core',()=>{it('has future matches',()=>{expect(demoMatches.length).toBeGreaterThan(0);expect(demoMatches.every(m=>m.home.id!==m.away.id)).toBe(true)});it('ranking positions are ordered',()=>{expect(ranking.map(r=>r.position)).toEqual([...ranking].sort((a,b)=>a.position-b.position).map(r=>r.position))});it('streak data is consistent',()=>{expect(demoUser.bestStreak).toBeGreaterThanOrEqual(demoUser.streak)});});
