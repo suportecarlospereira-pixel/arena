@@ -1,7 +1,8 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { SectionTitle } from '@/components/section-title';
-import { NotificationsList } from '@/components/notifications-list';
+import {redirect} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
+import {SectionTitle} from '@/components/section-title';
+import {NotificationsList} from '@/components/notifications-list';
+import {PushSettings} from '@/components/push-settings';
 
 export const dynamic='force-dynamic';
 
@@ -20,6 +21,7 @@ export default async function NotificationsPage(){
 
   return <div>
     <SectionTitle eyebrow="Central" title="Notificações"/>
+    <PushSettings/>
     <NotificationsList initial={(data??[]) as any[]}/>
   </div>
 }
