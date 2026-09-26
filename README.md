@@ -157,7 +157,7 @@ Recursos comerciais atuais:
 - aprovação manual que registra `subscriptions.provider='manual'`
 - notificação e auditoria após ativação
 
-A integração Stripe foi planejada para substituir o fluxo manual por checkout, webhook e sincronização automática de assinatura. Até a conexão da conta Stripe estar ativa, o fluxo manual continua sendo a fonte operacional de ativação.
+A integração Stripe foi planejada para substituir o fluxo manual por checkout, webhook e sincronização automática de assinatura. Até a conexão da conta Stripe estar ativa, o fluxo manual continua sendo a fonte operacional de ativação.\n\n### Patrocínios\n\n- campanhas administradas em `/admin/sponsors`\n- slot inicial na Home\n- identificação visual obrigatória como **Patrocinado**\n- visível apenas para usuários FREE elegíveis\n- PRO/PRO+ sem espaço patrocinado\n- métricas de impressão, clique e CTR\n- deduplicação por usuário/campanha/placement/dia\n- sem perfil comportamental de anúncios
 
 ## Segurança
 
@@ -192,7 +192,7 @@ A sequência atual inclui:
 - 007 — mínimo privilégio e integridade
 - 008 — comunidade, ligas e retenção
 - 009 — Web Push
-- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas\n- 012 — entitlements e quotas de monetização\n- 013 — operação manual de billing\n- 014 — helpers internos de autorização/auditoria do billing
+- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas\n- 012 — entitlements e quotas de monetização\n- 013 — operação manual de billing\n- 014 — helpers internos de autorização/auditoria do billing\n- 015 — campanhas patrocinadas e métricas
 
 A Edge Function de push está versionada em:
 
