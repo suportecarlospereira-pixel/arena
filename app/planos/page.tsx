@@ -96,7 +96,7 @@ export default async function PlanosPage(){
     </section>}
 
     <p className="text-xs leading-5 text-slate-600">
-      A cobrança automática será conectada ao provedor de pagamento. Até lá, solicitações de upgrade entram diretamente no painel administrativo para ativação manual.
+      O checkout Stripe já está implementado e será usado automaticamente quando as credenciais e os preços externos estiverem configurados. Enquanto isso, o mesmo botão usa o fluxo manual de upgrade como fallback.
     </p>
   </div>
 }
