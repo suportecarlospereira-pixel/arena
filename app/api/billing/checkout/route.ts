@@ -24,7 +24,7 @@ export async function POST(req:Request){
       .eq('id',user.id)
       .single();
 
-    if(profile?.plan_code===plan){
+    await s.rpc('record_monetization_event',{\n      p_event_type:'checkout_start',\n      p_plan_code:plan,\n      p_source:'pricing_page'\n    });\n\n    if(profile?.plan_code===plan){
       return NextResponse.json({error:'Você já está neste plano.',code:'ALREADY_ON_PLAN'},{status:409});
     }
 
