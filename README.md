@@ -146,18 +146,35 @@ Planos atuais:
 
 Os limites são aplicados no **backend/Supabase**, e não apenas escondidos no frontend.
 
-Recursos comerciais atuais:
+### Assinaturas
 
-- `/planos` com comparação e uso atual
-- quota diária da Arena AI
-- limite de criação de ligas
-- `/estatisticas` para PRO/PRO+
-- solicitações de mudança de plano
-- `/admin/billing` com fila comercial, PRO/PRO+, assinaturas manuais e MRR teórico
-- aprovação manual que registra `subscriptions.provider='manual'`
-- notificação e auditoria após ativação
+- `/planos` com comparação, uso e checkout
+- `/assinatura` com status e Customer Portal
+- checkout Stripe preparado em `/api/billing/checkout`
+- webhook Stripe assinado e idempotente em `/api/billing/webhook`
+- sincronização de assinatura → plano
+- fallback manual enquanto credenciais/preços Stripe não estiverem configurados
+- `/admin/billing` com MRR teórico, solicitações e diagnóstico Stripe
 
-A integração Stripe já possui checkout, webhook assinado, Customer Portal, idempotência de eventos e sincronização automática de plano. Ela entra em operação quando as credenciais server-side e os price IDs reais forem configurados; até lá, o fluxo manual permanece como fallback.\n\n### Patrocínios\n\n- campanhas administradas em `/admin/sponsors`\n- slot inicial na Home\n- identificação visual obrigatória como **Patrocinado**\n- visível apenas para usuários FREE elegíveis\n- PRO/PRO+ sem espaço patrocinado\n- métricas de impressão, clique e CTR\n- deduplicação por usuário/campanha/placement/dia\n- sem perfil comportamental de anúncios
+### Cupons e trials
+
+- grants temporários separados do plano pago
+- expiração automática por data, sem alterar a assinatura real
+- resgate de cupom em `/planos`
+- administração em `/admin/promos`
+- limite de resgates e janela de campanha
+- PRO/PRO+ temporário usa os mesmos paywalls server-side do plano pago
+
+### Patrocínios
+
+- campanhas administradas em `/admin/sponsors`
+- slot inicial na Home
+- identificação visual obrigatória como **Patrocinado**
+- visível apenas para usuários FREE elegíveis
+- PRO/PRO+ e trials premium ficam sem espaço patrocinado
+- métricas de impressão, clique e CTR
+- deduplicação por usuário/campanha/placement/dia
+- sem perfil comportamental de anúncios
 
 ## Segurança
 
@@ -192,7 +209,16 @@ A sequência atual inclui:
 - 007 — mínimo privilégio e integridade
 - 008 — comunidade, ligas e retenção
 - 009 — Web Push
-- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas\n- 012 — entitlements e quotas de monetização\n- 013 — operação manual de billing\n- 014 — helpers internos de autorização/auditoria do billing\n- 015 — campanhas patrocinadas e métricas\n- 016 — billing provider-ready e sincronização Stripe\n- 017 — helper de checkout para cliente Stripe
+- 010 — escudo de streak no fluxo de palpite
+- 011 — limites temporais corretos no ranking de ligas
+- 012 — entitlements e quotas de monetização
+- 013 — operação manual de billing
+- 014 — helpers internos de autorização/auditoria do billing
+- 015 — campanhas patrocinadas e métricas
+- 016 — billing provider-ready e sincronização Stripe
+- 017 — helper de checkout para cliente Stripe
+- 018 — índices de monetização
+- 019 — grants premium e cupons/trials
 
 A Edge Function de push está versionada em:
 
