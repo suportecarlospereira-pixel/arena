@@ -1,60 +1,214 @@
-# ARENA V0.1
+# ARENA
 
 **Futebol. Inteligência. Competição.**
 
-MVP web/PWA mobile-first com Next.js, TypeScript, Tailwind, Supabase e deploy alvo na Vercel. Não há aposta em dinheiro, cassino nem saldo apostável; palpites são gratuitos e usados para XP/ranking.
+ARENA é uma plataforma web/PWA mobile-first de palpites esportivos gratuitos, comunidade e gamificação. Não há aposta em dinheiro real, cassino, carteira apostável ou saldo financeiro.
 
-## Arquitetura cloud
+## Produção
 
-- **Web + API:** Next.js App Router / Vercel
-- **PostgreSQL, Auth e Storage:** Supabase
-- **PWA:** manifest + modo standalone + ícone web
-- **SportsProvider:** Mock no MVP, desacoplado para API esportiva futura
-- **AIProvider:** Mock no MVP, preparado para OpenAI depois
-- **PaymentProvider:** ainda sem cobrança real; planos FREE/PRO/PRO+ modelados no banco
+- **App:** Next.js App Router + TypeScript + Tailwind na Vercel
+- **Banco/Auth:** Supabase PostgreSQL + Auth + RLS
+- **Região do banco:** São Paulo
+- **Sports data:** sincronização cloud com ESPN para competições suportadas
+- **Automação:** pg_cron + pg_net no Supabase
+- **Push:** Web Push com Edge Function Supabase + VAPID em Vault
+- **PWA:** manifest, service worker, offline shell e push
+- **CI:** GitHub Actions com audit, typecheck, testes e build
+- **Administração:** 100% pelo navegador; nenhum servidor local é necessário
 
-O computador do administrador não precisa executar Node, PostgreSQL, Redis, Docker ou servidor 24/7.
+Produção atual:
 
-## Funcionalidades incluídas
+`https://arena-u7qy.vercel.app`
 
-- Home mobile-first com XP, nível, streak e ranking
-- Jogos e página de partida
-- Palpite gratuito (resultado + placar)
-- Função PostgreSQL transacional `submit_prediction` com fechamento por horário, autenticação e XP idempotente
-- Ranking e perfil
-- Arena AI com MockAIProvider
-- Admin dashboard base
-- Cadastro/login Supabase
-- Schema completo inicial com RLS, constraints e índices
-- PWA manifest
-- Health endpoint `/api/health`
-- Testes Vitest
+## Recursos principais
 
-## Supabase
+### Futebol real e palpites
 
-O projeto cloud já foi criado e as migrações 001 a 004 já foram aplicadas no ambiente ARENA.
+- agenda real sincronizada automaticamente
+- Brasileirão Série A e Série B
+- Copa do Brasil
+- Libertadores
+- Sul-Americana
+- escudos, horários, status e placar
+- palpites gratuitos de resultado e placar
+- fechamento automático no início da partida
+- rate limit server-side
+- histórico de palpites
 
-Variáveis de deploy:
+### Integridade de resultados
+
+Um placar final não é liquidado assim que aparece pela primeira vez.
+
+A camada de produção registra observações da fonte, exige confirmações repetidas e estabilidade do placar final antes da liquidação. Divergências posteriores bloqueiam a partida e encaminham o caso para revisão administrativa.
+
+Principais campos de integridade:
+
+- `result_confirmation_count`
+- `result_confirmed_at`
+- `result_disputed`
+- `result_locked`
+- `result_revision`
+
+O painel `/admin/review` permite ao SUPER_ADMIN resolver uma divergência e travar o placar oficial.
+
+### XP e gamificação
+
+- +5 XP pela primeira participação em uma partida
+- +20 XP por acertar vencedor/empate
+- +100 XP adicionais por placar exato
+- liquidação idempotente
+- reconciliação por revisão se o resultado oficial mudar
+- níveis
+- streak
+- escudos de streak
+- conquistas
+- títulos equipáveis
+- desafios diários e semanais
+- referrals com recompensa
+- rankings global, semanal, mensal, temporada, estado e cidade
+- ranking específico por competição
+
+### Comunidade
+
+- perfil público em `/u/username`
+- bio e time favorito
+- seguir jogadores
+- feed de atividade
+- comparação entre jogadores
+- ligas privadas com código de convite
+- ranking por liga
+- calendário personalizado do time favorito
+
+O feed não expõe a escolha de um palpite antes do jogo. A atividade registra apenas a existência do palpite, preservando a justiça competitiva.
+
+### Notificações
+
+- central interna de notificações
+- resultado de palpites
+- conquistas e streak
+- referrals
+- eventos sociais
+- lembrete antes de jogo do time favorito se ainda não houver palpite
+- Web Push opcional por dispositivo
+
+As chaves VAPID privadas e o segredo interno do dispatcher ficam armazenados no **Supabase Vault** e nunca devem ser colocados no cliente ou no repositório.
+
+### Arena AI
+
+A Arena AI atual usa inteligência orientada aos dados do próprio ARENA. Ela consulta:
+
+- desempenho do usuário
+- XP, precisão, acertos e placares exatos
+- ranking
+- time favorito
+- forma recente disponível no banco
+- próximos jogos
+- clubes mencionados na pergunta
+
+Ela não inventa estatísticas ausentes.
+
+A camada atual é database-first e não depende de um modelo LLM externo para funcionar.
+
+### Administração
+
+Rotas principais:
+
+- `/admin` — dashboard
+- `/admin/users` — usuários, roles e planos
+- `/admin/matches` — operação de partidas
+- `/admin/review` — revisão de resultados
+- `/admin/gamification` — desafios e conquistas
+- `/admin/notifications` — comunicação
+- `/admin/audit` — auditoria
+- `/admin/system` — saúde operacional
+
+RBAC:
+
+- USER
+- MODERATOR
+- ADMIN
+- SUPER_ADMIN
+
+Alterações privilegiadas são validadas no banco e registradas em auditoria.
+
+## Segurança
+
+- RLS nas tabelas expostas
+- operações críticas via RPC
+- grants de mínimo privilégio
+- roles nunca são definidas por `user_metadata`
+- service-role/secret nunca vai para o navegador
+- CSP
+- HSTS
+- X-Frame-Options
+- nosniff
+- Permissions-Policy
+- rate limit de palpites
+- trilha de auditoria
+- push secrets criptografados no Vault
+
+O Supabase Auth ainda deve ter **Leaked Password Protection** habilitado no Dashboard antes de uma abertura pública ampla.
+
+## Banco e migrações
+
+As migrações estão em `supabase/migrations/`.
+
+A sequência atual inclui:
+
+- 001 — schema inicial
+- 002 — segurança e ranking público
+- 003 — índices de FKs
+- 004 — dashboard administrativo
+- 005 — sincronização esportiva real
+- 006 — hardening de produção, revisão e liquidação
+- 007 — mínimo privilégio e integridade
+- 008 — comunidade, ligas e retenção
+- 009 — Web Push
+- 010 — escudo de streak no fluxo de palpite
+
+A Edge Function de push está versionada em:
+
+`supabase/functions/arena-push/`
+
+Os valores secretos do Vault são provisionados diretamente no ambiente de produção e **não** fazem parte das migrações Git.
+
+## Jobs cloud
+
+O Supabase executa automaticamente tarefas como:
+
+- atualização frequente de jogos
+- processamento das respostas esportivas
+- confirmação/liquidação dos resultados
+- criação de desafios recorrentes
+- limpeza de observações antigas
+- lembretes do time favorito
+
+O computador do administrador pode ficar desligado.
+
+## CI
+
+Cada push no `main` executa:
+
+1. `npm ci`
+2. `npm audit --audit-level=high`
+3. TypeScript typecheck
+4. testes Vitest
+5. `next build`
+
+Uma mudança não deve ser considerada pronta se esse pipeline não estiver verde.
+
+## Variáveis públicas
+
+O app usa:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
-NEXT_PUBLIC_APP_URL=https://seu-projeto.vercel.app
-ENABLE_DEMO_MODE=false
-CRON_SECRET=...
+NEXT_PUBLIC_APP_URL=https://arena-u7qy.vercel.app
 ```
 
-Nunca exponha uma chave service-role/secret no cliente.
+Nunca exponha chaves `service_role`, `sb_secret_...`, VAPID private key ou o segredo do push no navegador, GitHub ou variáveis `NEXT_PUBLIC_*`.
 
-## Deploy Vercel
+## Observações de produto
 
-Conecte este repositório GitHub à Vercel. A cada push na branch principal, a Vercel executará build e deploy automaticamente.
-
-## Cloud project
-
-- Supabase project: `ARENA`
-- Region: `sa-east-1` (São Paulo)
-- Project ref: `jpdjwcxlxvlgqgbresae`
-- Public API URL: `https://jpdjwcxlxvlgqgbresae.supabase.co`
-- Production architecture: Next.js on Vercel + Supabase Database/Auth.
-- No local database, Docker or always-on PC is required.
+O ARENA atual é uma plataforma de **palpites gratuitos e competição esportiva**. Qualquer evolução futura para aposta com dinheiro real exige uma arquitetura separada de conformidade, autorização regulatória, KYC/AML, pagamentos, jogo responsável, auditoria financeira e controles específicos.
