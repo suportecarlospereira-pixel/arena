@@ -22,7 +22,7 @@ export default async function Home(){
           {user?`Olá, ${user.name||user.username} 👋`:'Futebol. Inteligência. Competição.'}
         </h1>
         <p className="mt-2 max-w-xl text-sm text-slate-400">
-          Acompanhe futebol real, faça palpites gratuitos, dispute rankings e evolua seu perfil.
+          Acompanhe futebol real, faça palpites gratuitos, dispute rankings, ligas e evolua seu perfil.
         </p>
 
         {user
@@ -30,7 +30,7 @@ export default async function Home(){
               <StatCard label="Sequência" value={`🔥 ${user.current_streak} dias`} hint={`Recorde ${user.best_streak}`}/>
               <StatCard label="XP" value={Number(user.xp).toLocaleString('pt-BR')}/>
               <StatCard label="Nível" value={user.level}/>
-              <StatCard label="Palpites" value={user.predictions}/>
+              <StatCard label="Escudos" value={`🛡️ ${user.streak_freezes??0}`}/>
             </div>
           : <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/register" className="arena-button">CRIAR CONTA GRÁTIS</Link>
@@ -38,6 +38,32 @@ export default async function Home(){
             </div>}
       </div>
     </section>
+
+    {user&&<section>
+      <SectionTitle eyebrow="Comunidade" title="Sua Arena"/>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Link href="/feed" className="arena-card p-5 transition hover:border-sky-500/30">
+          <div className="text-2xl">🌐</div>
+          <b className="mt-2 block">Feed</b>
+          <p className="mt-1 text-xs text-slate-500">Veja conquistas e atividades de quem você segue.</p>
+        </Link>
+        <Link href="/ligas" className="arena-card p-5 transition hover:border-emerald-500/30">
+          <div className="text-2xl">🏟️</div>
+          <b className="mt-2 block">Ligas privadas</b>
+          <p className="mt-1 text-xs text-slate-500">Crie campeonatos entre amigos com ranking próprio.</p>
+        </Link>
+        <Link href="/meu-time" className="arena-card p-5 transition hover:border-amber-500/30">
+          <div className="text-2xl">⚽</div>
+          <b className="mt-2 block">Meu Time</b>
+          <p className="mt-1 text-xs text-slate-500">Agenda personalizada do seu clube favorito.</p>
+        </Link>
+        <Link href="/comparar" className="arena-card p-5 transition hover:border-violet-500/30">
+          <div className="text-2xl">⚔️</div>
+          <b className="mt-2 block">Comparar</b>
+          <p className="mt-1 text-xs text-slate-500">Compare sua performance com outro jogador.</p>
+        </Link>
+      </div>
+    </section>}
 
     <section>
       <SectionTitle eyebrow="Agenda real" title="Próximos jogos" action={<Link href="/jogos" className="text-sm font-bold text-emerald-400">Ver todos</Link>}/>
@@ -72,8 +98,8 @@ export default async function Home(){
           <span className="rounded-2xl bg-sky-500/15 p-3 text-sky-400"><Sparkles/></span>
           <div className="flex-1">
             <div className="arena-label">Arena AI</div>
-            <h3 className="font-black">Análise baseada nos dados da Arena</h3>
-            <p className="mt-1 text-xs text-slate-500">Sem inventar estatísticas.</p>
+            <h3 className="font-black">Performance, ranking e clubes</h3>
+            <p className="mt-1 text-xs text-slate-500">Análise baseada apenas nos dados reais da Arena.</p>
           </div>
           <ChevronRight className="text-slate-600 transition group-hover:translate-x-1"/>
         </div>
