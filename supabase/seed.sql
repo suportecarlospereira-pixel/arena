@@ -1,9 +1,20 @@
-with c as (insert into public.competitions(name,slug,country) values('Brasileirão','brasileirao','Brasil') on conflict(slug) do update set name=excluded.name returning id),
-s as (insert into public.seasons(competition_id,name,is_current) select id,'2026',true from c on conflict(competition_id,name) do update set is_current=true returning id),
-r as (insert into public.rounds(season_id,name,number) select id,'Rodada 27',27 from s on conflict(season_id,name) do update set number=27 returning id),
-t1 as (insert into public.teams(name,short_name,slug,city,state) values('Flamengo','FLA','flamengo','Rio de Janeiro','RJ') on conflict(slug) do update set short_name='FLA' returning id),
-t2 as (insert into public.teams(name,short_name,slug,city,state) values('Palmeiras','PAL','palmeiras','São Paulo','SP') on conflict(slug) do update set short_name='PAL' returning id)
-insert into public.matches(competition_id,season_id,round_id,home_team_id,away_team_id,starts_at,venue)
-select c.id,s.id,r.id,t1.id,t2.id,now()+interval '2 days','Maracanã' from c,s,r,t1,t2 where not exists(select 1 from public.matches m join public.teams h on h.id=m.home_team_id join public.teams a on a.id=m.away_team_id where h.slug='flamengo' and a.slug='palmeiras' and m.status='SCHEDULED');
-insert into public.achievements(code,name,description,xp_reward,criteria) values ('FIRST_PREDICTION','Primeiro Palpite','Faça seu primeiro palpite',50,'{"predictions":1}'),('TEN_HITS','10 Acertos','Acerte 10 resultados',100,'{"hits":10}'),('SEVEN_DAY_STREAK','7 Dias','Mantenha uma sequência de 7 dias',150,'{"streak":7}') on conflict(code) do nothing;
-insert into public.challenges(name,type,description,xp_reward,criteria,starts_at,ends_at) values ('3 palpites hoje','daily','Faça 3 palpites no dia',100,'{"predictions":3}',date_trunc('day',now()),date_trunc('day',now())+interval '1 day') on conflict do nothing;
+-- Dados esportivos não são seedados.
+-- As partidas reais são sincronizadas automaticamente pelo provider esportivo.
+
+insert into public.achievements(code,name,description,xp_reward,criteria)
+values
+  ('FIRST_PREDICTION','Primeiro Palpite','Faça seu primeiro palpite',50,'{"predictions":1}'),
+  ('TEN_HITS','10 Acertos','Acerte 10 resultados',100,'{"hits":10}'),
+  ('SEVEN_DAY_STREAK','7 Dias','Mantenha uma sequência de 7 dias',150,'{"streak":7}')
+on conflict(code) do nothing;
+
+insert into public.challenges(name,type,description,xp_reward,criteria,starts_at,ends_at)
+values (
+  '3 palpites hoje',
+  'daily',
+  'Faça 3 palpites no dia',
+  100,
+  '{"predictions":3}',
+  date_trunc('day',now()),
+  date_trunc('day',now())+interval '1 day'
+);

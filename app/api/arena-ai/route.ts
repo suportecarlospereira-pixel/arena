@@ -1,3 +1,32 @@
-import {NextResponse} from 'next/server'; import {z} from 'zod'; import {demoMatches} from '@/lib/demo-data';
-const Schema=z.object({question:z.string().min(2).max(800)});
-export async function POST(req:Request){try{const {question}=Schema.parse(await req.json());const q=question.toLowerCase();const m=demoMatches[0];let answer=`Tenho ${demoMatches.length} partidas demonstrativas disponíveis na Arena. Posso comparar horários, contexto da rodada e estatísticas cadastradas, mas não vou preencher números ausentes.`;if(q.includes('flamengo')||q.includes('palmeiras'))answer=`Para ${m.home.name} x ${m.away.name}, os dados demonstrativos cadastrados mostram posse ${m.stats?.[0].home} x ${m.stats?.[0].away}, finalizações ${m.stats?.[1].home} x ${m.stats?.[1].away} e escanteios ${m.stats?.[2].home} x ${m.stats?.[2].away}. Isto é conteúdo de demonstração do MVP, não dado esportivo em tempo real.`;return NextResponse.json({answer,provider:'MockAIProvider'});}catch{return NextResponse.json({error:'Pergunta inválida.'},{status:400});}}
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { getMatches } from '@/lib/data';
+import { fmtDate } from '@/lib/utils';
+
+const Schema = z.object({ question: z.string().min(2).max(800) });
+
+export async function POST(req:Request) {
+  try {
+    const {question}=Schema.parse(await req.json());
+    const matches=await getMatches(25);
+    const q=question.toLocaleLowerCase('pt-BR');
+
+    const selected=matches.filter((m)=>
+      q.includes(m.home.name.toLocaleLowerCase('pt-BR')) ||
+      q.includes(m.away.name.toLocaleLowerCase('pt-BR'))
+    );
+
+    const list=(selected.length?selected:matches.slice(0,5))
+      .slice(0,5)
+      .map((m)=>`${m.home.name} x ${m.away.name} — ${fmtDate(m.startsAt)} — ${m.competition}`)
+      .join('\n');
+
+    const answer=list
+      ? `Encontrei estes jogos reais na Arena:\n\n${list}\n\nNão vou inventar estatísticas que ainda não estejam disponíveis no banco.`
+      : 'Não encontrei jogos reais na janela atual.';
+
+    return NextResponse.json({answer,provider:'ArenaDatabase'});
+  } catch {
+    return NextResponse.json({error:'Pergunta inválida.'},{status:400});
+  }
+}
