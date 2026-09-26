@@ -1,0 +1,3 @@
+'use client';
+import {useState} from 'react';
+export function TitleEquipButton({achievementId,equipped}:{achievementId:string;equipped:boolean}){const [busy,setBusy]=useState(false);async function setTitle(){setBusy(true);const r=await fetch('/api/profile/title',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({achievementId:equipped?null:achievementId})});if(r.ok)location.reload();else setBusy(false);}return <button disabled={busy} onClick={setTitle} className="mt-3 rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-slate-300">{busy?'SALVANDO...':equipped?'REMOVER TÍTULO':'USAR COMO TÍTULO'}</button>}

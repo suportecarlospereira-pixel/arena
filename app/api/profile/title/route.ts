@@ -1,0 +1,5 @@
+import {NextResponse} from 'next/server';
+import {z} from 'zod';
+import {createClient} from '@/lib/supabase/server';
+const Schema=z.object({achievementId:z.string().uuid().nullable()});
+export async function POST(req:Request){try{const input=Schema.parse(await req.json());const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return NextResponse.json({error:'Não autenticado.'},{status:401});const {error}=await s.rpc('set_equipped_achievement',{p_achievement_id:input.achievementId});if(error)return NextResponse.json({error:'Você só pode equipar conquistas desbloqueadas.'},{status:409});return NextResponse.json({ok:true});}catch(e){if(e instanceof z.ZodError)return NextResponse.json({error:'Dados inválidos.'},{status:400});return NextResponse.json({error:'Erro interno.'},{status:500});}}
