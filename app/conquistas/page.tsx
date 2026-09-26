@@ -1,60 +1,6 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { SectionTitle } from '@/components/section-title';
-
+import {redirect} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
+import {SectionTitle} from '@/components/section-title';
+import {TitleEquipButton} from '@/components/title-equip-button';
 export const dynamic='force-dynamic';
-
-export default async function ConquistasPage(){
-  const s=await createClient();
-  const {data:{user}}=await s.auth.getUser();
-  if(!user) redirect('/login');
-
-  const [{data:achievements},{data:unlocked},{data:challenges},{data:entries}] = await Promise.all([
-    s.from('achievements').select('*').eq('active',true).order('xp_reward'),
-    s.from('user_achievements').select('achievement_id,unlocked_at').eq('user_id',user.id),
-    s.from('challenges').select('*').eq('active',true).order('ends_at'),
-    s.from('challenge_entries').select('*').eq('user_id',user.id)
-  ]);
-
-  const unlockedMap=new Map((unlocked??[]).map((x:any)=>[x.achievement_id,x]));
-  const entryMap=new Map((entries??[]).map((x:any)=>[x.challenge_id,x]));
-
-  return <div className="space-y-8">
-    <section>
-      <SectionTitle eyebrow="Gamificação" title="Conquistas"/>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {(achievements??[]).map((a:any)=>{
-          const u=unlockedMap.get(a.id);
-          return <div key={a.id} className={`arena-card p-5 ${u?'border-emerald-500/30':''}`}>
-            <div className="text-2xl">{u?'🏆':'🔒'}</div>
-            <b className="mt-3 block">{a.name}</b>
-            <p className="mt-1 text-sm text-slate-500">{a.description}</p>
-            <div className="mt-3 text-xs font-bold text-emerald-400">+{a.xp_reward} XP</div>
-            {u&&<div className="mt-2 text-[11px] text-slate-600">Desbloqueada em {new Date(u.unlocked_at).toLocaleDateString('pt-BR')}</div>}
-          </div>
-        })}
-      </div>
-    </section>
-
-    <section>
-      <SectionTitle eyebrow="Missões" title="Desafios ativos"/>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {(challenges??[]).map((c:any)=>{
-          const e=entryMap.get(c.id);
-          const needed=Number(c.criteria?.predictions??0);
-          const current=Number(e?.progress?.predictions??0);
-          const pct=needed?Math.min(100,Math.round(current/needed*100)):0;
-          return <div key={c.id} className="arena-card p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div><b>{c.name}</b><p className="mt-1 text-sm text-slate-500">{c.description}</p></div>
-              <span className="text-xs font-bold text-emerald-400">+{c.xp_reward} XP</span>
-            </div>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-emerald-500" style={{width:`${pct}%`}}/></div>
-            <div className="mt-2 flex justify-between text-xs text-slate-500"><span>{current}/{needed||'—'}</span><span>{e?.completed_at?'CONCLUÍDO':`${pct}%`}</span></div>
-          </div>
-        })}
-        {!challenges?.length&&<div className="arena-card p-5 text-sm text-slate-400">Nenhum desafio ativo agora.</div>}
-      </div>
-    </section>
-  </div>
-}
+export default async function ConquistasPage(){const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)redirect('/login');const [{data:profile},{data:achievements},{data:unlocked},{data:challenges},{data:entries}]=await Promise.all([s.from('profiles').select('equipped_achievement_id').eq('id',user.id).single(),s.from('achievements').select('*').eq('active',true).order('xp_reward'),s.from('user_achievements').select('achievement_id,unlocked_at').eq('user_id',user.id),s.from('challenges').select('*').eq('active',true).order('ends_at'),s.from('challenge_entries').select('*').eq('user_id',user.id)]);const unlockedMap=new Map((unlocked??[]).map((x:any)=>[x.achievement_id,x]));const entryMap=new Map((entries??[]).map((x:any)=>[x.challenge_id,x]));return <div className="space-y-8"><section><SectionTitle eyebrow="Gamificação" title="Conquistas e títulos"/><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{(achievements??[]).map((a:any)=>{const u=unlockedMap.get(a.id);const equipped=profile?.equipped_achievement_id===a.id;return <div key={a.id} className={`arena-card p-5 ${u?'border-emerald-500/30':''}`}><div className="text-2xl">{u?'🏆':'🔒'}</div><b className="mt-3 block">{a.name}</b><p className="mt-1 text-sm text-slate-500">{a.description}</p><div className="mt-3 text-xs font-bold text-emerald-400">+{a.xp_reward} XP</div>{u&&<><div className="mt-2 text-[11px] text-slate-600">Desbloqueada em {new Date(u.unlocked_at).toLocaleDateString('pt-BR')}</div><TitleEquipButton achievementId={a.id} equipped={equipped}/></>}</div>})}</div></section><section><SectionTitle eyebrow="Missões" title="Desafios ativos"/><div className="grid gap-3 sm:grid-cols-2">{(challenges??[]).map((c:any)=>{const e=entryMap.get(c.id);const needed=Number(c.criteria?.predictions??0);const current=Number(e?.progress?.predictions??0);const pct=needed?Math.min(100,Math.round(current/needed*100)):0;return <div key={c.id} className="arena-card p-5"><div className="flex items-start justify-between gap-3"><div><b>{c.name}</b><p className="mt-1 text-sm text-slate-500">{c.description}</p></div><span className="text-xs font-bold text-emerald-400">+{c.xp_reward} XP</span></div><div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-emerald-500" style={{width:`${pct}%`}}/></div><div className="mt-2 flex justify-between text-xs text-slate-500"><span>{current}/{needed||'—'}</span><span>{e?.completed_at?'CONCLUÍDO':`${pct}%`}</span></div></div>})}{!challenges?.length&&<div className="arena-card p-5 text-sm text-slate-400">Nenhum desafio ativo agora.</div>}</div></section></div>}
