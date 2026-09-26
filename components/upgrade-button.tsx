@@ -36,11 +36,9 @@ export function UpgradeButton({
   }
 
   const isDowngrade=current!==null&&weight[current]>weight[plan];
+  const isPaidTierChange=current!==null&&current!=='FREE';
 
-  async function request(){
-    setBusy(true);
-    setMsg('');
-
+  async function manualRequest(){
     const r=await fetch('/api/billing/request-upgrade',{
       method:'POST',
       headers:{'content-type':'application/json'},
@@ -55,11 +53,45 @@ export function UpgradeButton({
           ?'Solicitação de mudança enviada para o painel comercial.'
           :'Solicitação enviada. Ela já apareceu no painel comercial.'
       );
-    }else{
-      setMsg(j.error||'Não foi possível solicitar agora.');
+      return true;
     }
 
-    setBusy(false);
+    setMsg(j.error||'Não foi possível solicitar agora.');
+    return false;
+  }
+
+  async function request(){
+    setBusy(true);
+    setMsg('');
+
+    try{
+      // Paid-to-paid changes stay manual until Stripe proration is enabled.
+      if(isPaidTierChange){
+        await manualRequest();
+        return;
+      }
+
+      const checkout=await fetch('/api/billing/checkout',{
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({plan})
+      });
+      const j=await checkout.json();
+
+      if(checkout.ok&&j.url){
+        window.location.href=j.url;
+        return;
+      }
+
+      if(['BILLING_NOT_CONFIGURED','MANUAL_PLAN_CHANGE'].includes(j.code)){
+        await manualRequest();
+        return;
+      }
+
+      setMsg(j.error||'Não foi possível iniciar a assinatura.');
+    }finally{
+      setBusy(false);
+    }
   }
 
   return <div className="mt-5">
@@ -69,13 +101,14 @@ export function UpgradeButton({
       className={plan==='PRO_PLUS'?'arena-button w-full disabled:opacity-60':'arena-button-secondary w-full disabled:opacity-60'}
     >
       {busy
-        ?'ENVIANDO...'
+        ?'PROCESSANDO...'
         :sent
           ?'SOLICITAÇÃO ENVIADA'
           :isDowngrade
             ?'MUDAR PARA PRO'
             :'QUERO '+(plan==='PRO_PLUS'?'PRO+':'PRO')}
     </button>
+
     {isDowngrade&&!sent&&<p className="mt-2 text-xs text-slate-600">Essa mudança reduz os limites do seu plano atual.</p>}
     {msg&&<p className="mt-2 text-xs text-slate-500">{msg}</p>}
   </div>;
