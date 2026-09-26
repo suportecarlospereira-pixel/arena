@@ -1,0 +1,12 @@
+{
+  "name": "ARENA — Futebol. Inteligência. Competição.",
+  "short_name": "ARENA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
+  "description": "Plataforma de futebol, inteligência esportiva, palpites gratuitos e rankings.",
+  "icons": [
+    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
