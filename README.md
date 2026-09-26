@@ -155,6 +155,7 @@ Os limites são aplicados no **backend/Supabase**, e não apenas escondidos no f
 - sincronização de assinatura → plano
 - fallback manual enquanto credenciais/preços Stripe não estiverem configurados
 - `/admin/billing` com MRR teórico, solicitações e diagnóstico Stripe
+- `/admin/growth` com funil de planos, checkout, trials, ativações e cancelamentos
 
 ### Cupons e trials
 
@@ -219,6 +220,7 @@ A sequência atual inclui:
 - 017 — helper de checkout para cliente Stripe
 - 018 — índices de monetização
 - 019 — grants premium e cupons/trials
+- 020 — funil de monetização autenticado
 
 A Edge Function de push está versionada em:
 
