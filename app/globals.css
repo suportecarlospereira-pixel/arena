@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+html { background: #05070b; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(56, 189, 248, .12), transparent 26rem),
+    radial-gradient(circle at 90% 15%, rgba(34, 197, 94, .10), transparent 25rem),
+    #05070b;
+  color: #f8fafc;
+  font-family: Arial, Helvetica, sans-serif;
+}
+button,input,textarea { font: inherit; }
+a { color: inherit; text-decoration: none; }
+::selection { background: #16a34a; color: white; }
+
+@layer components {
+  .arena-card { @apply rounded-3xl border border-white/10 bg-white/[0.055] shadow-2xl shadow-black/20 backdrop-blur-xl; }
+  .arena-panel { @apply rounded-2xl border border-white/10 bg-black/20; }
+  .arena-label { @apply text-xs font-semibold uppercase tracking-[0.18em] text-slate-500; }
+  .arena-button { @apply inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-4 py-3 font-black text-slate-950 transition hover:bg-emerald-400 active:scale-[.98]; }
+  .arena-button-secondary { @apply inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 font-bold text-white transition hover:bg-white/[0.10]; }
+}
