@@ -1,0 +1,13 @@
+import {notFound} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
+import {StatCard} from '@/components/stat-card';
+import {SectionTitle} from '@/components/section-title';
+import {FollowButton} from '@/components/follow-button';
+import {ActivityList} from '@/components/activity-list';
+export const dynamic='force-dynamic';
+export default async function PublicProfile({params}:{params:Promise<{username:string}>}){
+ const {username}=await params;const s=await createClient();
+ const [{data:profile,error},{data:activity},{data:{user}}]=await Promise.all([s.rpc('get_public_profile',{p_username:username}),s.rpc('get_user_activity',{p_username:username,p_limit:30}),s.auth.getUser()]);
+ if(error)throw error;const p=Array.isArray(profile)?profile[0]:profile;if(!p)notFound();const isSelf=user?.id===p.profile_id;
+ return <div className="space-y-6"><section className="arena-card p-6"><div className="flex flex-wrap items-start gap-4"><div className="grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-emerald-400 to-sky-500 text-3xl font-black text-slate-950">{(p.name||p.username||'A').slice(0,1).toUpperCase()}</div><div className="min-w-0 flex-1"><h1 className="truncate text-3xl font-black">{p.name||p.username}</h1><div className="mt-1 text-sm text-slate-500">@{p.username} • {p.city||'-'}/{p.state||'-'}</div>{p.equipped_title&&<div className="mt-2 inline-flex rounded-xl bg-amber-500/10 px-3 py-1 text-xs font-black text-amber-400">🏆 {p.equipped_title}</div>}{p.bio&&<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{p.bio}</p>}<div className="mt-3 flex gap-4 text-xs text-slate-500"><span><b className="text-white">{p.followers}</b> seguidores</span><span><b className="text-white">{p.following}</b> seguindo</span></div></div>{!isSelf&&user&&<FollowButton username={p.username} initialFollowing={Boolean(p.is_following)}/>}</div>{p.favorite_team_name&&<div className="mt-5 flex items-center gap-3 rounded-2xl bg-white/[.04] p-3">{p.favorite_team_crest&&<img src={p.favorite_team_crest} alt="" className="h-10 w-10 object-contain"/>}<div><div className="arena-label">Time favorito</div><b>{p.favorite_team_name}</b></div></div>}<div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4"><StatCard label="XP" value={Number(p.xp).toLocaleString('pt-BR')}/><StatCard label="Palpites" value={p.predictions}/><StatCard label="Acerto" value={`${p.accuracy}%`}/><StatCard label="Placar exato" value={p.exact_hits}/></div></section><section><SectionTitle eyebrow="Atividade pública" title="Na Arena"/><ActivityList rows={(activity??[]) as any[]}/></section></div>
+}
