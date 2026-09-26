@@ -1,5 +1,7 @@
+import {createHmac} from 'node:crypto';
 import {describe,it,expect} from 'vitest';
 import {canPredict,pickFromScore,scorePrediction} from '../lib/scoring';
+import {verifyStripeSignature} from '../lib/billing/stripe-rest';
 
 describe('prediction scoring',()=>{
   it('detects home, draw and away results',()=>{
@@ -30,5 +32,50 @@ describe('prediction scoring',()=>{
     expect(canPredict('SCHEDULED',past)).toBe(false);
     expect(canPredict('LIVE',future)).toBe(false);
     expect(canPredict('FINISHED',future)).toBe(false);
+  });
+});
+
+describe('Stripe webhook verification',()=>{
+  it('accepts a valid v1 signature',()=>{
+    const secret='whsec_test_secret';
+    const body=JSON.stringify({id:'evt_test',type:'customer.subscription.updated'});
+    const timestamp=Math.floor(Date.now()/1000);
+    const signature=createHmac('sha256',secret)
+      .update(timestamp+'.'+body,'utf8')
+      .digest('hex');
+
+    expect(
+      verifyStripeSignature(body,`t=${timestamp},v1=${signature}`,secret)
+    ).toBe(true);
+  });
+
+  it('rejects a tampered payload',()=>{
+    const secret='whsec_test_secret';
+    const body=JSON.stringify({id:'evt_test',amount:1990});
+    const timestamp=Math.floor(Date.now()/1000);
+    const signature=createHmac('sha256',secret)
+      .update(timestamp+'.'+body,'utf8')
+      .digest('hex');
+
+    expect(
+      verifyStripeSignature(
+        JSON.stringify({id:'evt_test',amount:3990}),
+        `t=${timestamp},v1=${signature}`,
+        secret
+      )
+    ).toBe(false);
+  });
+
+  it('rejects an expired signature',()=>{
+    const secret='whsec_test_secret';
+    const body='{}';
+    const timestamp=Math.floor(Date.now()/1000)-1000;
+    const signature=createHmac('sha256',secret)
+      .update(timestamp+'.'+body,'utf8')
+      .digest('hex');
+
+    expect(
+      verifyStripeSignature(body,`t=${timestamp},v1=${signature}`,secret)
+    ).toBe(false);
   });
 });
