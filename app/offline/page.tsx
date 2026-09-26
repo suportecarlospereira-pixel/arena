@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function Offline(){return <div className="mx-auto max-w-lg py-20 text-center"><div className="text-5xl">⚽</div><h1 className="mt-5 text-3xl font-black">Você está offline</h1><p className="mt-3 text-slate-400">A ARENA precisa de internet para atualizar jogos, ranking e palpites. Assim que a conexão voltar, tente novamente.</p><Link href="/" className="arena-button mt-6">TENTAR NOVAMENTE</Link></div>}

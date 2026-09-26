@@ -1,0 +1,4 @@
+import {MatchCard} from '@/components/match-card';
+import {SectionTitle} from '@/components/section-title';
+import {getMatches} from '@/lib/data';
+export default async function Jogos(){const matches=await getMatches();return <div><SectionTitle eyebrow="Central de partidas" title="Jogos"/><div className="mb-5 flex gap-2 overflow-auto pb-1">{['Hoje','Amanhã','Brasileirão','Libertadores'].map((x,i)=><button key={x} className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-bold ${i===0?'bg-emerald-500 text-slate-950':'border border-white/10 bg-white/[.04] text-slate-400'}`}>{x}</button>)}</div><div className="grid gap-3 xl:grid-cols-2">{matches.map(m=><MatchCard key={m.id} match={m}/>)}</div>{!matches.length&&<div className="arena-card p-6 text-sm text-slate-400">Nenhuma partida cadastrada.</div>}</div>}
