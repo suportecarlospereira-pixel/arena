@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import type { Match } from '@/lib/types';
 
 function mapMatch(row:any): Match {
@@ -36,32 +37,46 @@ const MATCH_SELECT = `
   away:teams!matches_away_team_id_fkey(id,name,short_name,crest_url)
 `;
 
-export async function getMatches(limit = 60): Promise<Match[]> {
-  const s = await createClient();
-  const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+export async function getMatches(limit = 100): Promise<Match[]> {
+  const s=createPublicClient();
+  const cutoff=new Date(Date.now()-12*60*60*1000).toISOString();
 
-  const { data, error } = await s
+  const {data,error}=await s
     .from('matches')
     .select(MATCH_SELECT)
-    .gte('starts_at', cutoff)
+    .gte('starts_at',cutoff)
     .neq('status','CANCELLED')
     .order('starts_at',{ascending:true})
     .limit(limit);
 
-  if (error) throw error;
-  return (data ?? []).map(mapMatch);
+  if(error) throw error;
+  return (data??[]).map(mapMatch);
+}
+
+export async function getUpcomingMatches(limit=10):Promise<Match[]>{
+  const s=createPublicClient();
+  const {data,error}=await s
+    .from('matches')
+    .select(MATCH_SELECT)
+    .in('status',['SCHEDULED','LIVE'])
+    .gte('starts_at',new Date(Date.now()-6*60*60*1000).toISOString())
+    .order('starts_at',{ascending:true})
+    .limit(limit);
+
+  if(error) throw error;
+  return (data??[]).map(mapMatch);
 }
 
 export async function getMatch(id:string): Promise<Match | null> {
-  const s = await createClient();
-  const { data, error } = await s
+  const s=createPublicClient();
+  const {data,error}=await s
     .from('matches')
     .select(MATCH_SELECT)
     .eq('id',id)
     .maybeSingle();
 
-  if (error) throw error;
-  return data ? mapMatch(data) : null;
+  if(error) throw error;
+  return data?mapMatch(data):null;
 }
 
 export async function getCurrentChallenge(){
@@ -98,6 +113,7 @@ export async function getCurrentChallenge(){
   }
 
   const needed=Number(challenge.criteria?.predictions??0);
+
   return {
     ...challenge,
     current,
@@ -108,29 +124,23 @@ export async function getCurrentChallenge(){
 }
 
 export async function getCurrentProfile() {
-  const s = await createClient();
-  const { data:{ user } } = await s.auth.getUser();
+  const s=await createClient();
+  const {data:{user}}=await s.auth.getUser();
+  if(!user) return null;
 
-  if (!user) return null;
+  const {data:profile,error}=await s.from('profiles').select('*').eq('id',user.id).single();
+  if(error) throw error;
 
-  const { data: profile, error } = await s
-    .from('profiles')
-    .select('*')
-    .eq('id',user.id)
-    .single();
-
-  if (error) throw error;
-
-  const [{count: predictions},{count: results},{count: exact}] = await Promise.all([
+  const [{count:predictions},{count:results},{count:exact}]=await Promise.all([
     s.from('predictions').select('*',{count:'exact',head:true}).eq('user_id',user.id),
     s.from('prediction_results').select('prediction_id,predictions!inner(user_id)',{count:'exact',head:true}).eq('predictions.user_id',user.id).eq('result_correct',true),
     s.from('prediction_results').select('prediction_id,predictions!inner(user_id)',{count:'exact',head:true}).eq('predictions.user_id',user.id).eq('exact_score',true),
   ]);
 
-  const total = predictions ?? 0;
-  const hits = results ?? 0;
-  const xp = Number(profile.xp ?? 0);
-  const level = xp>=100000?100:xp>=35000?50:xp>=15000?30:xp>=8000?20:xp>=3000?10:xp>=1000?5:1;
+  const total=predictions??0;
+  const hits=results??0;
+  const xp=Number(profile.xp??0);
+  const level=xp>=100000?100:xp>=35000?50:xp>=15000?30:xp>=8000?20:xp>=3000?10:xp>=1000?5:1;
 
   return {
     ...profile,

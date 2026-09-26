@@ -1,10 +1,12 @@
 'use client';
 
 import { Home, Trophy, Bot, UserRound, CirclePlay, Shield } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Logo } from './logo';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 
 const nav=[
   ['/','Home',Home],
@@ -16,8 +18,29 @@ const nav=[
 
 const plainPages=new Set(['/login','/register','/forgot-password','/reset-password']);
 
-export function AppShell({children,isAdmin}:{children:React.ReactNode;isAdmin:boolean}){
+export function AppShell({children}:{children:React.ReactNode}){
   const path=usePathname();
+  const [isAdmin,setIsAdmin]=useState(false);
+
+  useEffect(()=>{
+    let active=true;
+    const supabase=createClient();
+
+    (async()=>{
+      const {data:{user}}=await supabase.auth.getUser();
+      if(!active||!user) return;
+
+      const {data:profile}=await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id',user.id)
+        .maybeSingle();
+
+      if(active) setIsAdmin(Boolean(profile&&['ADMIN','SUPER_ADMIN'].includes(profile.role)));
+    })().catch(()=>{ if(active) setIsAdmin(false); });
+
+    return ()=>{active=false};
+  },[]);
 
   if(plainPages.has(path)) return <>{children}</>;
 
