@@ -49,7 +49,7 @@ export default async function Perfil(){
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Link href={'/u/'+u.username} className="arena-card p-5 font-bold transition hover:border-emerald-500/30">👤 Perfil público</Link>
         <Link href="/estatisticas" className="arena-card p-5 font-bold transition hover:border-violet-500/30">📊 Estatísticas PRO</Link>
-        <Link href="/planos" className="arena-card p-5 font-bold transition hover:border-violet-500/30">✨ Planos</Link>
+        <Link href="/planos" className="arena-card p-5 font-bold transition hover:border-violet-500/30">✨ Planos</Link>\n        <Link href="/assinatura" className="arena-card p-5 font-bold transition hover:border-sky-500/30">💳 Assinatura</Link>
         <Link href="/meu-time" className="arena-card p-5 font-bold transition hover:border-emerald-500/30">⚽ Meu time</Link>
         <Link href="/ligas" className="arena-card p-5 font-bold transition hover:border-emerald-500/30">🏟️ Minhas ligas</Link>
         <Link href="/feed" className="arena-card p-5 font-bold transition hover:border-emerald-500/30">🌐 Feed</Link>
