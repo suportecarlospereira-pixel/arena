@@ -37,7 +37,7 @@ Produção atual:
 
 ### Integridade de resultados
 
-Um placar final não é liquidado assim que aparece pela primeira vez.
+Um placar final não é liquidado assim que aparece pela primeira vez. A modelagem também está preparada para observações de múltiplos providers; em produção, a ESPN é a fonte ativa atual.
 
 A camada de produção registra observações da fonte, exige confirmações repetidas e estabilidade do placar final antes da liquidação. Divergências posteriores bloqueiam a partida e encaminham o caso para revisão administrativa.
 
@@ -164,7 +164,7 @@ A sequência atual inclui:
 - 007 — mínimo privilégio e integridade
 - 008 — comunidade, ligas e retenção
 - 009 — Web Push
-- 010 — escudo de streak no fluxo de palpite
+- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas
 
 A Edge Function de push está versionada em:
 
