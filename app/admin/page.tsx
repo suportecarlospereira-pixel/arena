@@ -37,7 +37,8 @@ export default async function Admin(){
   const cards=[
     ['/admin/users',Users,'Usuários','Roles, planos e perfis'],
     ['/admin/billing',CreditCard,'Billing',billingPending?billingPending+' upgrade(s) pendente(s)':'Planos, MRR e upgrades'],
-    ['/admin/sponsors',Megaphone,'Patrocínios','Campanhas, impressões, cliques e CTR'],\n    ['/admin/promos',TicketPercent,'Cupons e trials','Benefícios temporários PRO/PRO+'],
+    ['/admin/sponsors',Megaphone,'Patrocínios','Campanhas, impressões, cliques e CTR'],
+    ['/admin/promos',TicketPercent,'Cupons e trials','Benefícios temporários PRO/PRO+'],
     ['/admin/matches',Activity,'Partidas','Agenda, status e resultados'],
     ['/admin/review',TriangleAlert,'Revisão de resultados',reviewCount?reviewCount+' item(ns) aguardando':'Nenhuma pendência'],
     ['/admin/gamification',Trophy,'Gamificação','Conquistas e desafios'],
