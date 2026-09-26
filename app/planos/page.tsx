@@ -2,7 +2,7 @@ import {createPublicClient} from '@/lib/supabase/public';
 import {getMyEntitlements,getMyPlanStatus,formatPlanPrice} from '@/lib/monetization';
 import {SectionTitle} from '@/components/section-title';
 import {UpgradeButton} from '@/components/upgrade-button';
-import {PromoRedeem} from '@/components/promo-redeem';
+import {PromoRedeem} from '@/components/promo-redeem';\nimport {PricingViewTracker} from '@/components/pricing-view-tracker';
 
 export const dynamic='force-dynamic';
 
@@ -53,7 +53,7 @@ export default async function PlanosPage(){
   const billingPlan=status?.billing_plan_code??ent?.plan_code??null;
   const trialActive=Boolean(status?.grant_plan_code&&status?.grant_ends_at);
 
-  return <div className="space-y-7">
+  return <div className="space-y-7">\n    <PricingViewTracker enabled={Boolean(ent)}/>
     <div>
       <SectionTitle eyebrow="ARENA Premium" title="Escolha como quer competir"/>
       <p className="max-w-2xl text-sm leading-6 text-slate-400">
