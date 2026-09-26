@@ -131,6 +131,34 @@ RBAC:
 
 Alterações privilegiadas são validadas no banco e registradas em auditoria.
 
+
+## Monetização
+
+O núcleo de palpites permanece gratuito e a assinatura não altera a pontuação de um acerto.
+
+Planos atuais:
+
+| Plano | Preço mensal | Arena AI | Ligas criadas | Estatísticas avançadas |
+| --- | ---: | ---: | ---: | --- |
+| FREE | R$ 0,00 | 5/dia | 1 | Não |
+| PRO | R$ 19,90 | 50/dia | 5 | Sim |
+| PRO+ | R$ 39,90 | 200/dia | 20 | Sim |
+
+Os limites são aplicados no **backend/Supabase**, e não apenas escondidos no frontend.
+
+Recursos comerciais atuais:
+
+- `/planos` com comparação e uso atual
+- quota diária da Arena AI
+- limite de criação de ligas
+- `/estatisticas` para PRO/PRO+
+- solicitações de mudança de plano
+- `/admin/billing` com fila comercial, PRO/PRO+, assinaturas manuais e MRR teórico
+- aprovação manual que registra `subscriptions.provider='manual'`
+- notificação e auditoria após ativação
+
+A integração Stripe foi planejada para substituir o fluxo manual por checkout, webhook e sincronização automática de assinatura. Até a conexão da conta Stripe estar ativa, o fluxo manual continua sendo a fonte operacional de ativação.
+
 ## Segurança
 
 - RLS nas tabelas expostas
@@ -164,7 +192,7 @@ A sequência atual inclui:
 - 007 — mínimo privilégio e integridade
 - 008 — comunidade, ligas e retenção
 - 009 — Web Push
-- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas
+- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas\n- 012 — entitlements e quotas de monetização\n- 013 — operação manual de billing
 
 A Edge Function de push está versionada em:
 
