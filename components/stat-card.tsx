@@ -1,0 +1,1 @@
+export function StatCard({label,value,hint}:{label:string;value:string|number;hint?:string}){return <div className="arena-card p-4"><div className="arena-label">{label}</div><div className="mt-2 text-2xl font-black tracking-tight">{value}</div>{hint&&<div className="mt-1 text-xs text-slate-500">{hint}</div>}</div>}

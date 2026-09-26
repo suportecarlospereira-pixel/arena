@@ -1,0 +1,1 @@
+export function SectionTitle({eyebrow,title,action}:{eyebrow?:string;title:string;action?:React.ReactNode}){return <div className="mb-4 flex items-end justify-between gap-3"><div>{eyebrow&&<div className="arena-label">{eyebrow}</div>}<h2 className="mt-1 text-xl font-black tracking-tight sm:text-2xl">{title}</h2></div>{action}</div>}
