@@ -192,7 +192,7 @@ A sequência atual inclui:
 - 007 — mínimo privilégio e integridade
 - 008 — comunidade, ligas e retenção
 - 009 — Web Push
-- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas\n- 012 — entitlements e quotas de monetização\n- 013 — operação manual de billing
+- 010 — escudo de streak no fluxo de palpite\n- 011 — limites temporais corretos no ranking de ligas\n- 012 — entitlements e quotas de monetização\n- 013 — operação manual de billing\n- 014 — helpers internos de autorização/auditoria do billing
 
 A Edge Function de push está versionada em:
 
