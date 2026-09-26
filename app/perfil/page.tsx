@@ -38,10 +38,11 @@ export default async function Perfil(){
 
     <section>
       <SectionTitle eyebrow="Atalhos" title="Sua Arena"/>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Link href="/palpites" className="arena-card p-5 font-bold transition hover:border-emerald-500/30">🎯 Meus palpites</Link>
         <Link href="/conquistas" className="arena-card p-5 font-bold transition hover:border-emerald-500/30">🏆 Conquistas e desafios</Link>
         <Link href="/notificacoes" className="arena-card p-5 font-bold transition hover:border-emerald-500/30">🔔 Notificações</Link>
+        <Link href="/indicacoes" className="arena-card p-5 font-bold transition hover:border-emerald-500/30">🤝 Indicações</Link>
       </div>
     </section>
 

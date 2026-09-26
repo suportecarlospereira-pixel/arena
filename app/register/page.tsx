@@ -23,6 +23,7 @@ export default function Register() {
     setBusy(true);
     setMsg('');
 
+    const referrer = new URLSearchParams(location.search).get('ref')?.trim().toLowerCase() || null;
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email: form.email,
@@ -35,6 +36,7 @@ export default function Register() {
           city: form.city,
           state: form.state,
           birth_date: form.birthDate,
+          referrer,
         },
       },
     });
