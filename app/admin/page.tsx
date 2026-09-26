@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {redirect} from 'next/navigation';
-import {Users,Activity,Trophy,ShieldCheck,Bell,ScrollText,HeartPulse} from 'lucide-react';
+import {Users,Activity,Trophy,ShieldCheck,Bell,ScrollText,HeartPulse,TriangleAlert} from 'lucide-react';
 import {SectionTitle} from '@/components/section-title';
 import {StatCard} from '@/components/stat-card';
 import {createClient} from '@/lib/supabase/server';
@@ -15,13 +15,20 @@ export default async function Admin(){
   const {data:me}=await s.from('profiles').select('role,username').eq('id',user.id).single();
   if(!me||!['ADMIN','SUPER_ADMIN'].includes(me.role)) redirect('/');
 
-  const {data:stats,error:statsError}=await s.rpc('admin_dashboard_stats');
+  const [{data:stats,error:statsError},{data:health}]=await Promise.all([
+    s.rpc('admin_dashboard_stats'),
+    s.rpc('admin_system_health')
+  ]);
   if(statsError) throw statsError;
+
   const row=Array.isArray(stats)?stats[0]:stats;
+  const h=Array.isArray(health)?health[0]:health;
+  const reviewCount=Number(h?.finished_unconfirmed??0)+Number(h?.disputed_results??0);
 
   const cards=[
     ['/admin/users',Users,'Usuários','Roles, planos e perfis'],
     ['/admin/matches',Activity,'Partidas','Agenda, status e resultados'],
+    ['/admin/review',TriangleAlert,'Revisão de resultados',reviewCount?String(reviewCount)+' item(ns) aguardando':'Nenhuma pendência'],
     ['/admin/gamification',Trophy,'Gamificação','Conquistas e desafios'],
     ['/admin/notifications',Bell,'Notificações','Avisos para usuários'],
     ['/admin/audit',ScrollText,'Auditoria','Histórico administrativo'],
@@ -29,7 +36,7 @@ export default async function Admin(){
   ] as const;
 
   return <div className="space-y-6">
-    <SectionTitle eyebrow={`${me.role} • @${me.username}`} title="Admin Dashboard"/>
+    <SectionTitle eyebrow={me.role+' • @'+me.username} title="Admin Dashboard"/>
 
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <StatCard label="Usuários" value={row?.users??0}/>
