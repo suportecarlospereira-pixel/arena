@@ -1,25 +1,34 @@
 import Link from 'next/link';
-import { Flame, Sparkles, ChevronRight } from 'lucide-react';
-import { getMatches, getCurrentProfile, getCurrentChallenge } from '@/lib/data';
-import { MatchCard } from '@/components/match-card';
-import { StatCard } from '@/components/stat-card';
-import { SectionTitle } from '@/components/section-title';
+import {Flame,Sparkles,ChevronRight} from 'lucide-react';
+import {getMatches,getCurrentProfile,getCurrentChallenge} from '@/lib/data';
+import {createClient} from '@/lib/supabase/server';
+import {MatchCard} from '@/components/match-card';
+import {StatCard} from '@/components/stat-card';
+import {SectionTitle} from '@/components/section-title';
+import {SponsorCard} from '@/components/sponsor-card';
 
 export const dynamic='force-dynamic';
 
 export default async function Home(){
-  const [matches,user,challenge]=await Promise.all([
+  const s=await createClient();
+
+  const [matches,user,challenge,sponsorResult]=await Promise.all([
     getMatches(4),
     getCurrentProfile(),
-    getCurrentChallenge()
+    getCurrentChallenge(),
+    s.rpc('get_active_sponsor',{p_placement:'home'})
   ]);
+
+  const sponsor=Array.isArray(sponsorResult.data)
+    ?sponsorResult.data[0]
+    :sponsorResult.data;
 
   return <div className="space-y-7">
     <section className="arena-card overflow-hidden p-5 sm:p-7">
       <div className="relative">
         <div className="arena-label">Bem-vindo à Arena</div>
         <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
-          {user?`Olá, ${user.name||user.username} 👋`:'Futebol. Inteligência. Competição.'}
+          {user?'Olá, '+(user.name||user.username)+' 👋':'Futebol. Inteligência. Competição.'}
         </h1>
         <p className="mt-2 max-w-xl text-sm text-slate-400">
           Acompanhe futebol real, faça palpites gratuitos, dispute rankings, ligas e evolua seu perfil.
@@ -27,10 +36,10 @@ export default async function Home(){
 
         {user
           ? <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatCard label="Sequência" value={`🔥 ${user.current_streak} dias`} hint={`Recorde ${user.best_streak}`}/>
+              <StatCard label="Sequência" value={'🔥 '+user.current_streak+' dias'} hint={'Recorde '+user.best_streak}/>
               <StatCard label="XP" value={Number(user.xp).toLocaleString('pt-BR')}/>
               <StatCard label="Nível" value={user.level}/>
-              <StatCard label="Escudos" value={`🛡️ ${user.streak_freezes??0}`}/>
+              <StatCard label="Escudos" value={'🛡️ '+(user.streak_freezes??0)}/>
             </div>
           : <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/register" className="arena-button">CRIAR CONTA GRÁTIS</Link>
@@ -38,6 +47,8 @@ export default async function Home(){
             </div>}
       </div>
     </section>
+
+    {sponsor&&<SponsorCard sponsor={sponsor as any} placement="home"/>}
 
     {user&&<section>
       <SectionTitle eyebrow="Comunidade" title="Sua Arena"/>
@@ -84,10 +95,10 @@ export default async function Home(){
 
         {challenge&&<>
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full bg-emerald-500" style={{width:`${challenge.percent}%`}}/>
+            <div className="h-full bg-emerald-500" style={{width:(challenge.percent??0)+'%'}}/>
           </div>
           <div className="mt-2 flex justify-between text-xs text-slate-500">
-            <span>{challenge.completed?'Concluído':`${challenge.current}/${challenge.needed} palpites`}</span>
+            <span>{challenge.completed?'Concluído':challenge.current+'/'+challenge.needed+' palpites'}</span>
             <b className="text-emerald-400">+{challenge.xp_reward} XP</b>
           </div>
         </>}
@@ -105,5 +116,5 @@ export default async function Home(){
         </div>
       </Link>
     </section>
-  </div>
+  </div>;
 }
