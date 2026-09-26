@@ -1,7 +1,56 @@
 import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {createClient} from '@/lib/supabase/server';
+import {getMyEntitlements} from '@/lib/monetization';
 import {SectionTitle} from '@/components/section-title';
 import {LeagueManager} from '@/components/league-manager';
+
 export const dynamic='force-dynamic';
-export default async function LigasPage(){const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)redirect('/login');const {data,error}=await s.from('league_members').select('member_role,joined_at,leagues(id,name,description,invite_code,is_private,owner_id,created_at)').eq('user_id',user.id).order('joined_at',{ascending:false});if(error)throw error;return <div className="space-y-7"><div><SectionTitle eyebrow="Competição entre amigos" title="Ligas"/><p className="text-sm text-slate-400">Crie sua liga, compartilhe o código e dispute um ranking baseado apenas nos palpites esportivos.</p></div><LeagueManager/><section><SectionTitle eyebrow="Suas ligas" title="Participando"/><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{(data??[]).map((row:any)=>{const l=row.leagues;if(!l)return null;return <Link key={l.id} href={`/ligas/${l.id}`} className="arena-card p-5 transition hover:border-emerald-500/30"><div className="arena-label">{row.member_role}</div><h3 className="mt-1 text-xl font-black">{l.name}</h3><p className="mt-2 line-clamp-2 text-sm text-slate-500">{l.description||'Liga privada da Arena.'}</p><div className="mt-4 text-xs font-bold text-emerald-400">ABRIR RANKING →</div></Link>})}{!data?.length&&<div className="arena-card p-5 text-sm text-slate-400">Você ainda não participa de nenhuma liga.</div>}</div></section></div>}
+
+export default async function LigasPage(){
+  const [s,ent]=await Promise.all([createClient(),getMyEntitlements()]);
+  const {data:{user}}=await s.auth.getUser();
+  if(!user) redirect('/login');
+
+  const {data,error}=await s.from('league_members')
+    .select('member_role,joined_at,leagues(id,name,description,invite_code,is_private,owner_id,created_at)')
+    .eq('user_id',user.id)
+    .order('joined_at',{ascending:false});
+
+  if(error) throw error;
+
+  return <div className="space-y-7">
+    <div>
+      <SectionTitle eyebrow="Competição entre amigos" title="Ligas"/>
+      <p className="text-sm text-slate-400">
+        Crie sua liga, compartilhe o código e dispute um ranking baseado apenas nos palpites esportivos.
+      </p>
+    </div>
+
+    <LeagueManager
+      owned={ent?.owned_leagues??0}
+      limit={ent?.league_create_limit??1}
+    />
+
+    <section>
+      <SectionTitle
+        eyebrow="Suas ligas"
+        title="Participando"
+        action={<Link href="/planos" className="text-sm font-bold text-violet-300">Planos</Link>}
+      />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {(data??[]).map((row:any)=>{
+          const l=row.leagues;
+          if(!l) return null;
+          return <Link key={l.id} href={'/ligas/'+l.id} className="arena-card p-5 transition hover:border-emerald-500/30">
+            <div className="arena-label">{row.member_role}</div>
+            <h3 className="mt-1 text-xl font-black">{l.name}</h3>
+            <p className="mt-2 line-clamp-2 text-sm text-slate-500">{l.description||'Liga privada da Arena.'}</p>
+            <div className="mt-4 text-xs font-bold text-emerald-400">ABRIR RANKING →</div>
+          </Link>;
+        })}
+        {!data?.length&&<div className="arena-card p-5 text-sm text-slate-400">Você ainda não participa de nenhuma liga.</div>}
+      </div>
+    </section>
+  </div>;
+}
